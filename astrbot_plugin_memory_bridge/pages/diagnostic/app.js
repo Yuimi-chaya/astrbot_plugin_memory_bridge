@@ -1,1 +1,0 @@
-console.log('Memory Bridge diagnostic page');

@@ -1,5 +1,0 @@
-name: 续忆桥
-desc: 续忆桥：面向 AstrBot 的会话记忆导出、备份、迁移与 WebUI 管理工具
-author: 喝益胃 / Yuimi-chaya
-version: 0.6.22
-repo: https://github.com/Yuimi-chaya/astrbot_plugin_memory_bridge
