@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>续忆桥 Memory Bridge</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="v055_patch.css" />
+  <link rel="stylesheet" href="v056_patch.css" />
+  <link rel="stylesheet" href="v061_layout_fix.css" />
+  <link rel="stylesheet" href="v069_memory.css" />
+</head>
+<body>
+  <div class="bg"></div>
+  <div id="app" class="layout-shell">
+    <aside class="sidebar">
+      <div class="brand-block"><div class="brand-mark mascot-mark"><span class="mascot-emoji">🐱</span></div><div><strong>续忆桥</strong><span>Memory Bridge</span></div></div>
+      <nav class="side-nav" aria-label="主导航">
+        <button class="nav-item active" data-page="overview">总览检测</button>
+        <button class="nav-item" data-page="trigger">远程触发</button>
+        <button class="nav-item" data-page="files">导出文件</button>
+        <button class="nav-item" data-page="inspect">记忆检查</button>
+        <button class="nav-item" data-page="migrate">记忆迁移</button>
+        <button class="nav-item" data-page="memory">注入记忆</button>
+        <button class="nav-item" data-page="whitelist">用户白名单</button>
+        <button class="nav-item" data-page="sessions">会话管理</button>
+        <button class="nav-item" data-page="logs">操作日志</button>
+      </nav>
+      <div class="side-foot"><span>WebUI v0.6.0</span><button id="logoutBtn" class="text-btn hidden">退出登录</button></div>
+    </aside>
+
+    <div class="content-shell">
+      <header class="hero compact-hero">
+        <div><div class="eyebrow">Memory Bridge Web Console</div><h1>续忆桥控制台</h1><p>检测运行状态、导出清洗记忆、检查记忆包内容，并将压缩记忆迁移到新会话。</p></div>
+        <div class="hero-actions"><button id="refreshBtn" class="btn btn-primary">刷新状态</button><button id="loginBtn" class="btn btn-ghost hidden">登录</button></div>
+      </header>
+
+      <section id="loginPanel" class="card login-card hidden">
+        <h2>访问认证</h2><p>当前 WebUI 已启用密码保护，请输入管理端密码。</p>
+        <div class="row"><input id="passwordInput" type="password" placeholder="WebUI 密码" /><button id="passwordSubmit" class="btn btn-primary">进入</button></div>
+        <div id="loginMsg" class="hint"></div>
+      </section>
+
+      <main id="mainPanel" class="hidden">
+        <section class="page active" data-page-panel="overview">
+          <section class="grid stats-grid">
+            <div class="stat card"><span>插件版本</span><strong id="version">-</strong></div>
+            <div class="stat card"><span>WebUI</span><strong id="webState">-</strong></div>
+            <div class="stat card"><span>导出文件</span><strong id="fileCount">-</strong></div>
+            <div class="stat card"><span>可用会话</span><strong id="sessionCount">-</strong></div>
+          </section>
+          <section class="grid two-col overview-grid">
+            <div class="card"><div class="card-head"><h2>配置视图</h2><span class="pill">敏感值已隐藏</span></div><div id="configBox" class="config-list">加载中...</div></div>
+            <div class="card"><div class="card-head"><h2>功能检测</h2><span class="pill">实时诊断</span></div><div id="checks" class="checks"></div></div>
+          </section>
+        </section>
+
+        <section class="page" data-page-panel="trigger">
+          <section class="card page-card">
+            <div class="card-head"><h2>远程触发</h2><span class="pill warn">会向目标会话发送结果</span></div>
+            <div class="form-grid">
+              <div class="wide-field"><label>选择会话</label><input id="sessionSearch" class="search-input" placeholder="搜索会话名称 / origin" /><select id="sessionSelect" class="session-picker compact-select"></select><div class="selector-tip">提示：优先点击下面的会话卡片选择目标，避免误触。</div></div>
+              <div><label>手动输入会话 origin（可选，优先）</label><input id="manualSession" placeholder="例如 default:FriendMessage:3555187509" /></div>
+              <div><label>指令</label><select id="commandSelect"><option value="status">/续忆 status</option><option value="doctor">/续忆 doctor</option><option value="backend">/续忆 backend</option><option value="files">/续忆 files</option><option value="export">/续忆 export</option><option value="send_last">/续忆 send_last</option><option value="clean_preview">/续忆 clean_preview</option><option value="clean_export">/续忆 clean_export</option><option value="import_preview">/续忆 import_preview</option><option value="imports">/续忆 imports</option></select></div>
+              <div><label>清洗模式</label><select id="modeSelect"><option value="balanced">balanced 平衡</option><option value="safe">safe 保守</option><option value="aggressive">aggressive 激进</option></select></div>
+            </div>
+            <div class="selector-title">会话卡片</div>
+            <div id="triggerSessionCards" class="session-card-grid compact"></div>
+            <div class="mini-actions"><button class="btn btn-ghost mini" data-quick="status">状态</button><button class="btn btn-ghost mini" data-quick="backend">后端</button><button class="btn btn-ghost mini" data-quick="export">原始导出</button><button class="btn btn-ghost mini" data-quick="clean_export">清洗导出</button></div>
+            <div class="action-row"><button id="triggerBtn" class="btn btn-primary">远程触发</button><button id="historyPreviewBtn" class="btn btn-ghost">预览该会话最近历史</button></div>
+            <div id="triggerMsg" class="result-box">请选择会话和指令。</div>
+          </section>
+        </section>
+
+        <section class="page" data-page-panel="files"><section class="card page-card"><div class="card-head"><h2>已生成文件</h2><span class="pill">zip 导出记录 / 内容检查 / 迁移预览</span></div><div class="table-wrap"><table><thead><tr><th>文件名</th><th>类型</th><th>大小</th><th>时间</th><th>来源</th><th>操作</th></tr></thead><tbody id="filesBody"></tbody></table></div></section></section>
+
+        <section class="page" data-page-panel="inspect"><section class="card page-card"><div class="card-head"><h2>记忆包检查 / 历史预览</h2><span class="pill">manifest / samples / migration</span></div><div id="inspectBox" class="inspect-box">点击文件页右侧“检查”，或在远程触发页点击“预览该会话最近历史”。</div></section></section>
+
+        <section class="page" data-page-panel="migrate">
+          <section class="card page-card">
+            <div class="card-head"><h2>记忆迁移</h2><span class="pill warn">建议先导入测试会话</span></div>
+            <div class="card external-import-panel">
+              <div class="card-head"><h3>导入外部记忆包</h3><span class="pill">校验通过后会出现在“已生成文件”</span></div>
+              <p class="selector-tip">支持导入续忆桥 clean zip。会检查 manifest / cleaning / migration 结构，结构正确才复制到导出目录，并标记为“外部导入”。</p>
+              <div class="upload-row"><input id="externalPackageInput" type="file" accept=".zip,application/zip" /><button id="externalPackageBtn" class="btn btn-ghost">上传并校验</button></div>
+              <div id="externalImportMsg" class="result-box compact-result">请选择一个记忆包 zip。</div>
+            </div>
+            <div class="form-grid">
+              <div class="wide-field"><label>选择清洗记忆包</label><select id="importFileSelect" class="session-picker file-picker compact-select"></select><div class="selector-tip">下拉框只保留当前选中项；详细来源请看“记忆包卡片”。</div></div>
+              <div><label>导入模式</label><select id="importMode"><option value="hybrid">hybrid 推荐：新会话种子 + 插件长期记忆</option><option value="seed">seed：仅新建迁移会话</option><option value="plugin_memory">plugin_memory：仅保存插件长期记忆</option></select></div>
+              <div class="wide-field"><label>目标会话</label><input id="importSessionSearch" class="search-input" placeholder="搜索目标会话名称 / origin" /><select id="importSessionSelect" class="session-picker compact-select"></select><div class="selector-tip">提示：优先点击下面的目标会话卡片选择。</div></div>
+              <div><label>手动输入目标 origin（可选，优先）</label><input id="importManualSession" placeholder="例如 default:FriendMessage:3555187509" /></div>
+            </div>
+            <div class="selector-title">记忆包卡片</div>
+            <div id="importFileCards" class="file-card-grid compact"></div>
+            <div class="selector-title">目标会话卡片</div>
+            <div id="importSessionCards" class="session-card-grid compact"></div>
+            <div class="action-row"><button id="importPreviewBtn" class="btn btn-ghost">预览导入计划</button><button id="importRunBtn" class="btn btn-primary">确认导入</button></div>
+            <div id="importBox" class="inspect-box">请选择 clean zip 和目标会话。导入会默认创建新的 AstrBot conversation，不覆盖原会话。</div>
+          </section>
+          <section class="card page-card small-top"><div class="card-head"><h2>导入记录</h2><span class="pill">回滚后会显示已回滚</span></div><div id="importsList" class="list tall-list"></div></section>
+        </section>
+
+        <section class="page" data-page-panel="memory">
+          <section class="card page-card">
+            <div class="card-head"><h2>注入记忆管理</h2><span class="pill">长期记忆 / chunks / memory_card</span></div>
+            <div class="memory-toolbar">
+              <input id="memorySearch" class="search-input" placeholder="搜索导入 ID / 来源 / 目标 / 记忆内容" />
+              <select id="memoryStatusFilter" class="compact-select">
+                <option value="all">全部</option>
+                <option value="enabled">仅启用</option>
+                <option value="disabled">仅禁用</option>
+              </select>
+              <button id="memoryRefreshBtn" class="btn btn-ghost">刷新记忆</button>
+            </div>
+            <div id="memoryInjectSummary" class="memory-summary">加载中...</div>
+            <div class="memory-test-panel">
+              <div class="card-head"><h3>检索测试</h3><span class="pill">预览实际注入内容</span></div>
+              <div class="memory-test-grid">
+                <input id="memoryTestOrigin" class="search-input" placeholder="目标 origin，留空则使用当前选中的导入记录" />
+                <input id="memoryTestQuery" class="search-input" placeholder="输入测试问题，例如：我之前的项目进展是什么？" />
+                <button id="memoryTestBtn" class="btn btn-ghost">测试检索</button>
+              </div>
+              <div id="memoryTestResult" class="memory-test-result">选择导入记录后，可直接输入问题测试命中的 chunks、fallback 和最终注入文本。</div>
+            </div>
+            <div id="memoryImportsList" class="memory-import-grid"></div>
+            <div id="memoryDetailBox" class="inspect-box memory-detail">选择一条导入记忆查看分条内容。</div>
+          </section>
+        </section>
+
+        <section class="page" data-page-panel="whitelist">
+          <section class="card page-card">
+            <div class="card-head"><h2>用户白名单</h2><span class="pill">限制聊天命令与 WebUI 远程触发</span></div>
+            <div class="form-grid">
+              <div class="wide-field"><label>添加会话 origin / QQ / 群号</label><input id="whitelistInput" class="search-input" placeholder="例如 default:FriendMessage:3555187509 或 3555187509" /><div class="selector-tip">启用后，未在白名单内的会话执行导出、文件、导入、历史预览等命令会被后端拦截。可填完整 origin、用户 QQ、群号。</div></div>
+              <div class="wide-field"><label class="toggle"><input id="whitelistStrictToggle" type="checkbox" /> 启用白名单强校验</label><div class="action-row"><button id="whitelistAddBtn" class="btn btn-primary">添加到白名单</button><button id="whitelistSaveBtn" class="btn btn-ghost">保存白名单</button><button id="whitelistClearBtn" class="btn btn-ghost">清空</button></div></div>
+            </div>
+            <div id="whitelistMsg" class="result-box">白名单加载中...</div>
+            <div class="selector-title">白名单条目</div>
+            <div id="whitelistList" class="session-card-grid compact"></div>
+          </section>
+        </section>
+
+        <section class="page" data-page-panel="sessions"><section class="card page-card"><div class="card-head"><h2>已知会话</h2><span class="pill">已过滤空适配器 / 纯数字空会话</span></div><div id="sessionsList" class="session-card-grid"></div></section></section>
+        <section class="page" data-page-panel="logs"><section class="card page-card"><div class="card-head"><h2>操作日志</h2><span class="pill">最近 200 条</span></div><div id="actionsList" class="list tall-list"></div></section></section>
+      </main>
+    </div>
+  </div>
+  <script src="app.js"></script>
+  <script src="v055_patch.js"></script>
+  <script src="v056_patch.js"></script>
+  <script src="v069_memory.js"></script>
+  <script src="v617_ui_unified.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+// v0.5.4 integrated: v052 legacy hook kept for compatibility. Real patch is in v054_patch.js.

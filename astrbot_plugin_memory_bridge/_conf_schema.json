@@ -1,0 +1,137 @@
+{
+  "export_max_messages": {
+    "type": "int",
+    "default": 1000,
+    "description": "导出/清洗/WebUI 触发时最多读取的消息数。"
+  },
+  "cleaning_mode": {
+    "type": "string",
+    "default": "balanced",
+    "description": "默认清洗模式：safe / balanced / aggressive。"
+  },
+  "cleaning_keep_recent_messages": {
+    "type": "int",
+    "default": 20,
+    "description": "清洗时强制保留最近 N 条消息。"
+  },
+  "cleaning_mask_secrets": {
+    "type": "bool",
+    "default": true,
+    "description": "是否对 token、api_key、password、cookie 等敏感内容脱敏。"
+  },
+  "file_delivery_send_mode": {
+    "type": "string",
+    "default": "auto",
+    "description": "聊天命令文件发送方式：auto / file / path / path_only / disabled。"
+  },
+  "file_delivery_callback_api_base": {
+    "type": "string",
+    "default": "",
+    "description": "可选。仅 URL 回调下载模式需要。"
+  },
+  "file_delivery_include_server_path_in_reply": {
+    "type": "bool",
+    "default": true,
+    "description": "是否在回复文本里附带服务器端文件路径。"
+  },
+  "privacy_require_confirm_raw_in_group": {
+    "type": "bool",
+    "default": false,
+    "description": "群聊导出原始历史时是否要求二次确认。"
+  },
+  "web_admin_enabled": {
+    "type": "bool",
+    "default": true,
+    "description": "是否启用续忆桥独立 WebUI 管理端。"
+  },
+  "web_admin_host": {
+    "type": "string",
+    "default": "0.0.0.0",
+    "description": "WebUI 监听地址。建议保持 0.0.0.0，Docker 需映射 2333 端口。"
+  },
+  "web_admin_port": {
+    "type": "int",
+    "default": 2333,
+    "description": "WebUI 监听端口。"
+  },
+  "web_admin_password": {
+    "type": "string",
+    "default": "",
+    "description": "WebUI 访问密码。留空则无需登录；暴露到局域网/公网时强烈建议填写。"
+  },
+  "web_admin_allow_remote_trigger": {
+    "type": "bool",
+    "default": true,
+    "description": "是否允许 WebUI 远程向已知会话触发 /续忆 指令。"
+  },
+  "web_admin_allowed_commands": {
+    "type": "string",
+    "default": "status,doctor,backend,files,export,send_last,clean_preview,clean_export,import_preview,imports",
+    "description": "WebUI 远程触发命令白名单，逗号分隔。"
+  },
+  "web_admin_allowed_users": {
+    "type": "string",
+    "default": "",
+    "description": "命令用户白名单，逗号分隔。可填完整 origin、用户 QQ 或群号。留空表示不限制；也可在 WebUI 用户白名单页管理。"
+  },
+  "web_admin_allow_file_delete": {
+    "type": "bool",
+    "default": false,
+    "description": "是否允许 WebUI 删除导出 zip 文件。默认关闭。"
+  },
+  "web_admin_allow_history_preview": {
+    "type": "bool",
+    "default": true,
+    "description": "是否允许 WebUI 读取并展示会话历史预览。"
+  },
+  "web_admin_allow_import": {
+    "type": "bool",
+    "default": true,
+    "description": "是否允许 WebUI 执行记忆迁移导入。"
+  },
+  "web_admin_token_expire_hours": {
+    "type": "int",
+    "default": 24,
+    "description": "WebUI 登录 token 有效期，单位小时。"
+  },
+  "import_default_mode": {
+    "type": "string",
+    "default": "hybrid",
+    "description": "默认导入模式：hybrid / seed / plugin_memory。"
+  },
+  "memory_injection_enabled": {
+    "type": "bool",
+    "default": true,
+    "description": "是否启用长期记忆注入。启用后，active 的 plugin_memory/hybrid 导入记忆会在后续 LLM 请求前按相关性注入。"
+  },
+  "memory_injection_max_imports": {
+    "type": "int",
+    "default": 3,
+    "description": "每次请求最多参考多少条 active 导入记录。"
+  },
+  "memory_injection_max_chunks": {
+    "type": "int",
+    "default": 6,
+    "description": "每次请求最多注入多少条相关 chunks。"
+  },
+  "memory_injection_max_card_chars": {
+    "type": "int",
+    "default": 1600,
+    "description": "每条导入记忆的 memory_card 摘要最多注入字符数。"
+  },
+  "memory_injection_max_total_chars": {
+    "type": "int",
+    "default": 3600,
+    "description": "单次长期记忆注入总字符上限。"
+  },
+  "memory_injection_card_fallback_enabled": {
+    "type": "bool",
+    "default": true,
+    "description": "当 chunks 为空或当前问题没有命中 chunk 时，是否从 memory_card.md 抽取轻量摘要作为 fallback 注入。"
+  },
+  "memory_injection_card_fallback_chars": {
+    "type": "int",
+    "default": 1200,
+    "description": "memory_card fallback 单次最多抽取字符数。"
+  }
+}
