@@ -1,0 +1,88 @@
+/* v0.5.6 WebUI patch */
+.avatar,
+.file-icon.file-avatar,
+.session-card .avatar,
+.session-card .avatar img,
+.session-card .avatar .avatar-img,
+.file-card .file-icon,
+.file-card .file-icon img,
+.file-card .file-icon .avatar-img {
+  border-radius: 22px !important;
+}
+.avatar img:not(.member-avatar img),
+.session-card .avatar > img,
+.session-card .avatar .avatar-img,
+.file-icon.file-avatar > img,
+.file-icon.file-avatar .avatar-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: inherit !important;
+  clip-path: inset(0 round 22px) !important;
+  overflow: hidden !important;
+}
+.avatar {
+  overflow: visible !important;
+  isolation: isolate;
+}
+.avatar:not(.avatar-composite), .file-icon.file-avatar:not(.avatar-composite) {
+  overflow: hidden !important;
+}
+.session-card-grid .session-card .avatar,
+#triggerSessionCards .session-card .avatar,
+#importSessionCards .session-card .avatar,
+#sessionsList .session-card .avatar {
+  border-radius: 22px !important;
+  transform: translateZ(0);
+}
+.external-import-panel {
+  margin: 14px 0 20px;
+  background: linear-gradient(135deg, rgba(124,92,255,.14), rgba(25,211,255,.08));
+  border-color: rgba(141,232,255,.18);
+}
+.external-import-panel h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 20px;
+}
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.upload-row input[type="file"] {
+  flex: 1 1 360px;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(6,14,26,.72);
+  color: var(--text);
+}
+.compact-result {
+  min-height: 54px;
+  white-space: pre-wrap;
+}
+.source-cell em.external-badge,
+.external-badge {
+  display: inline-flex;
+  width: max-content;
+  margin-top: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-style: normal;
+  font-size: 12px;
+  color: #061a10;
+  background: rgba(53,223,145,.88);
+}
+.file-card.external-file {
+  border-color: rgba(53,223,145,.45);
+  background: linear-gradient(135deg, rgba(53,223,145,.13), rgba(25,211,255,.08));
+}
+.profile-sync-note {
+  color: rgba(205,226,255,.72);
+  font-size: 12px;
+  margin-top: 6px;
+}
