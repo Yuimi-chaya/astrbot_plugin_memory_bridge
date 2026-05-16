@@ -2925,6 +2925,9 @@ def _mb_v060_apply_injection_to_req(req: Any, context_text: str) -> str:
 
 
 async def _mb_v060_on_llm_request_impl(self, event: AstrMessageEvent, req: Any):
+    # Superseded by the v0.6.6+ injector. Keep this registered hook as a no-op
+    # because AstrBot may still call every decorated historical hook.
+    return
     if not _mb_v060_memory_enabled(self):
         return
     try:
@@ -6022,3 +6025,65 @@ def _mb_v622_web_status_payload(self):
 
 
 MemoryBridgePlugin.web_status_payload = _mb_v622_web_status_payload
+
+
+# ---------------------------------------------------------------------------
+# v0.6.23 runtime patch
+# AstrBot v4.24.5 injection compatibility: avoid mutating message/context object lists.
+# ---------------------------------------------------------------------------
+PLUGIN_VERSION = "0.6.23"
+
+
+def _mb_v623_safe_apply_injection_to_req(req: Any, context_text: str) -> str:
+    if req is None or not context_text:
+        return ""
+    # AstrBot 4.24.x serializes message/context objects via model_dump_for_context().
+    # Do not append plain str/dict into extra_user_content_parts, messages or contexts.
+    if isinstance(req, dict):
+        try:
+            old = str(req.get("system_prompt") or "")
+            req["system_prompt"] = (old + "\n\n" + context_text).strip() if old else context_text
+            return "dict.system_prompt.safe"
+        except Exception:
+            try:
+                old = str(req.get("prompt") or "")
+                req["prompt"] = (context_text + "\n\n" + old).strip() if old else context_text
+                return "dict.prompt.safe"
+            except Exception:
+                return "failed"
+    for attr, mode in [("system_prompt", "append"), ("prompt", "prepend")]:
+        try:
+            current = getattr(req, attr, None)
+            if current is None or isinstance(current, str):
+                old = current or ""
+                value = (str(old) + "\n\n" + context_text).strip() if mode == "append" and old else (context_text + "\n\n" + str(old)).strip() if old else context_text
+                setattr(req, attr, value)
+                return f"{attr}.safe"
+        except Exception:
+            pass
+    return "failed"
+
+
+_mb_v066_apply_injection_to_req = _mb_v623_safe_apply_injection_to_req
+_mb_v060_apply_injection_to_req = _mb_v623_safe_apply_injection_to_req
+globals()["_mb_v066_apply_injection_to_req"] = _mb_v623_safe_apply_injection_to_req
+globals()["_mb_v060_apply_injection_to_req"] = _mb_v623_safe_apply_injection_to_req
+
+
+async def _mb_v623_old_injector_noop(self, event: AstrMessageEvent, req: Any):
+    return
+
+
+_mb_v060_on_llm_request_impl = _mb_v623_old_injector_noop
+globals()["_mb_v060_on_llm_request_impl"] = _mb_v623_old_injector_noop
+
+
+_old_mb_v623_web_status_payload = getattr(MemoryBridgePlugin, "web_status_payload", None)
+def _mb_v623_web_status_payload(self):
+    payload = _old_mb_v623_web_status_payload(self) if _old_mb_v623_web_status_payload else {"ok": True}
+    payload["version"] = PLUGIN_VERSION
+    payload["memory_injection_compat_patch"] = {"enabled": True, "version": "0.6.23", "safe_fields": ["system_prompt", "prompt"], "disabled_legacy_hook": True}
+    return payload
+
+
+MemoryBridgePlugin.web_status_payload = _mb_v623_web_status_payload
